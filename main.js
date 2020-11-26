@@ -1,6 +1,9 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu } = require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
+const { ipcMain } = require('electron');
+const SerialPort = require('serialport');
+const Readline = require('@serialport/parser-readline')
 
 // Check if we're in an installer, and bail out after handling
 // installer-y things.
@@ -8,9 +11,7 @@ if (handleSquirrelEvent()) {
     return;
 }
 
-// TODO: Evaluate if we need this. This is so SerialPort can access
-// native bindings in the render process.
-app.allowRendererProcessReuse = false;
+Menu.setApplicationMenu(null);
 
 let mainWindow;
 
@@ -46,6 +47,39 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow()
+    }
+})
+
+ipcMain.on('SERIAL', (event, data) => {
+    SerialPort.list().then(ports => {
+        event.reply('SERIAL', JSON.stringify(ports));
+    });
+})
+
+let port;
+
+ipcMain.on('SERIAL_CONNECT', (event, data) => {
+    const { path, baudRate = 115200 } = JSON.parse(data);
+    const doConnect = () => {
+        port = new SerialPort(path, { baudRate });
+        const parser = new Readline();
+        port.pipe(parser);
+        parser.on('data', line => {
+            console.log(port.path + " < " + line);
+            event.reply('SERIAL_LINE', line);
+        });
+        event.reply('SERIAL_CONNECTED', '');
+    }
+    if (port) port.close(doConnect);
+    else doConnect();
+})
+
+ipcMain.on('SERIAL_WRITE', (event, line) => {
+    if (port) {
+        console.log(port.path + " > " + line);
+        port.write(line + "\n");
+    } else {
+        console.warn("Write to empty port.");
     }
 })
 

@@ -38,8 +38,10 @@
   "dependencies": {
     "electron-is-dev": "^1.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "materialize-css": "^1.0.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
+    "react-materialize": "^3.9.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.1",
     "serialport": "^9.0.2"
@@ -74,8 +76,9 @@
     }
   },
   "scripts": {
-    "start": "electron-forge start",
-    "dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "start-react": "react-scripts start",
+    "start-forge": "electron-forge start",
+    "start": "concurrently \"npm run start-react\" \"wait-on http://localhost:3000 && npm run start-forge\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "setup-dist": "npx @electron-forge/cli import",
