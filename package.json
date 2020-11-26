@@ -7,17 +7,6 @@
   "description": "Desktop Application for control and programming of LEDuino boards.",
   "homepage": "./",
   "main": "main.js",
-  "scripts": {
-    "start": "electron-forge start",
-    "dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "setup-dist": "npx @electron-forge/cli import",
-    "dist": "npm run build && npm run make",
-    "rebuild": "./node_modules/.bin/electron-rebuild",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
-  },
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -83,5 +72,16 @@
         }
       ]
     }
+  },
+  "scripts": {
+    "start": "electron-forge start",
+    "dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "setup-dist": "npx @electron-forge/cli import",
+    "dist": "npm run build && npm run make",
+    "rebuild": "./node_modules/.bin/electron-rebuild",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   }
 }

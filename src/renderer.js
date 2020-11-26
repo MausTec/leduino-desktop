@@ -6,7 +6,7 @@ serialport.list().then((ports) => {
         document.getElementById('error').textContent = 'No ports discovered'
     } else {
         ports.map(port => {
-            document.write(JSON.stringify(port))
+            document.getElementById('error').textContent = JSON.stringify(port);
         })
     }
 }).catch((err) => {
