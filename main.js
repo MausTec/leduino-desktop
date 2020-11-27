@@ -1,3 +1,7 @@
+const {ApiClient} = require('twitch');
+const {PubSubClient} = require('twitch-pubsub-client');
+const {ElectronAuthProvider} = require('twitch-electron-auth-provider');
+
 const { app, BrowserWindow, Menu } = require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
@@ -30,7 +34,10 @@ function createWindow () {
         : `file://${path.join(__dirname, 'build/index.html')}`;
 
     mainWindow.loadURL(startURL);
-    mainWindow.once('ready-to-show', () => mainWindow.show());
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+        twitchAuth();
+    });
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
@@ -82,6 +89,45 @@ ipcMain.on('SERIAL_WRITE', (event, line) => {
         console.warn("Write to empty port.");
     }
 })
+
+function twitchAuth(data) {
+    const redirectUri = 'http://localhost/login';
+
+    const clientId = 'uc6rmnts2td4z4ch98jwqlue2zcysr';
+
+    const authProvider = new ElectronAuthProvider({
+        clientId,
+        redirectUri
+    })
+
+    const apiClient = new ApiClient({ authProvider });
+    const pubSubClient = new PubSubClient();
+    pubSubClient.registerUserListener(apiClient).then(userId => {
+        console.log({userId});
+
+        pubSubClient.onRedemption(userId, (message) => {
+            console.log(`${message.userDisplayName} redeemed: ${JSON.stringify(message, undefined, 2)}`);
+            ipcMain.emit('TWITCH_REDEEM', JSON.stringify(message));
+
+            switch(message.rewardName) {
+                case "Lights go Red":
+                    port.write("set all #FF0000\n");
+                    break;
+                case "Lights go Blu":
+                    port.write("set all #0000FF\n");
+                    break;
+                case "Lights custom hex":
+                    port.write(`set all ${message.message}\n`)
+                    break;
+            }
+        })
+    });
+}
+
+ipcMain.on('TWITCH_AUTH', (event, json) => {
+    const data = JSON.parse(json);
+    twitchAuth(data);
+});
 
 /**
  * Handle Squirrel installer events for Windows.
