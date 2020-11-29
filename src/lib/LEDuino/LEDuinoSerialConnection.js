@@ -24,23 +24,36 @@ class LEDuinoSerialConnection {
             this.onReceive && this.onReceive(data);
         });
 
-        ipcRenderer.send('SERIAL_CONNECT', JSON.stringify({
-            path: this.path,
-            ...this.options
-        }));
+        if (path) {
+            ipcRenderer.send('SERIAL_CONNECT', JSON.stringify({
+                path: this.path,
+                ...this.options
+            }));
+        }
     }
 
-    static listPorts(cb) {
-        ipcRenderer.on('SERIAL', (event, data) => {
-            console.log({event, data});
+    static listPorts() {
+        return new Promise((resolve, reject) => {
+            ipcRenderer.once('SERIAL', (event, data) => {
+                console.log({event, data});
 
-            try {
-                const list = JSON.parse(data);
-                cb(list);
-            } catch(e) {}
+                try {
+                    const list = JSON.parse(data);
+                    resolve(list);
+                } catch (e) {
+                    reject(e);
+                }
+            });
+
+            ipcRenderer.send('SERIAL', 'list');
         });
+    }
 
-        ipcRenderer.send('SERIAL', 'list');
+    disconnect() {
+        return new Promise((resolve, reject) => {
+            ipcRenderer.once('SERIAL_DISCONNECTED', resolve);
+            ipcRenderer.send('SERIAL_DISCONNECT');
+        })
     }
 
     write(msg) {

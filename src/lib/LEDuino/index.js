@@ -18,6 +18,13 @@ class LEDuino {
         connection.onDisconnect = this.onDisconnect;
     }
 
+    disconnect() {
+        if (!this.connection) return;
+        this.connection.disconnect().then(() => {
+            this.connection = null;
+        })
+    }
+
     set(channel, color) {
         const c = Color(color);
         this.send(`set ${channel} ${c.hex()}`)
@@ -25,6 +32,15 @@ class LEDuino {
 
     setAll(color) {
         this.set(CHANNEL_ALL, color);
+    }
+
+    fade(channel, color, duration) {
+        const c = Color(color);
+        this.send(`fade ${channel} ${c.hex()} ${duration}`)
+    }
+
+    fadeAll(channel, color, duration) {
+        this.fade(CHANNEL_ALL, color, duration);
     }
 
     send(msg) {

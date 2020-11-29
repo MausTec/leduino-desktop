@@ -1,7 +1,3 @@
-const {ApiClient} = require('twitch');
-const {PubSubClient} = require('twitch-pubsub-client');
-const {ElectronAuthProvider} = require('twitch-electron-auth-provider');
-
 const { app, BrowserWindow, Menu } = require('electron');
 const isDev = require('electron-is-dev');
 const path = require('path');
@@ -9,13 +5,15 @@ const { ipcMain } = require('electron');
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline')
 
+const TwitchConnection = require('./src/server/TwitchConnection');
+
 // Check if we're in an installer, and bail out after handling
 // installer-y things.
 if (handleSquirrelEvent()) {
     return;
 }
 
-Menu.setApplicationMenu(null);
+// Menu.setApplicationMenu(null);
 
 let mainWindow;
 
@@ -36,7 +34,7 @@ function createWindow () {
     mainWindow.loadURL(startURL);
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
-        twitchAuth();
+        TwitchConnection.authenticate();
     });
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -68,6 +66,10 @@ let port;
 ipcMain.on('SERIAL_CONNECT', (event, data) => {
     const { path, baudRate = 115200 } = JSON.parse(data);
     const doConnect = () => {
+        if (!path) {
+            return;
+        }
+
         port = new SerialPort(path, { baudRate });
         const parser = new Readline();
         port.pipe(parser);
@@ -81,6 +83,12 @@ ipcMain.on('SERIAL_CONNECT', (event, data) => {
     else doConnect();
 })
 
+ipcMain.on('SERIAL_DISCONNECT', (event, data) => {
+    if (port) port.close(() => {
+        event.reply('SERIAL_DISCONNECTED', '');
+    });
+})
+
 ipcMain.on('SERIAL_WRITE', (event, line) => {
     if (port) {
         console.log(port.path + " > " + line);
@@ -90,43 +98,9 @@ ipcMain.on('SERIAL_WRITE', (event, line) => {
     }
 })
 
-function twitchAuth(data) {
-    const redirectUri = 'http://localhost/login';
-
-    const clientId = 'uc6rmnts2td4z4ch98jwqlue2zcysr';
-
-    const authProvider = new ElectronAuthProvider({
-        clientId,
-        redirectUri
-    })
-
-    const apiClient = new ApiClient({ authProvider });
-    const pubSubClient = new PubSubClient();
-    pubSubClient.registerUserListener(apiClient).then(userId => {
-        console.log({userId});
-
-        pubSubClient.onRedemption(userId, (message) => {
-            console.log(`${message.userDisplayName} redeemed: ${JSON.stringify(message, undefined, 2)}`);
-            ipcMain.emit('TWITCH_REDEEM', JSON.stringify(message));
-
-            switch(message.rewardName) {
-                case "Lights go Red":
-                    port.write("set all #FF0000\n");
-                    break;
-                case "Lights go Blu":
-                    port.write("set all #0000FF\n");
-                    break;
-                case "Lights custom hex":
-                    port.write(`set all ${message.message}\n`)
-                    break;
-            }
-        })
-    });
-}
-
 ipcMain.on('TWITCH_AUTH', (event, json) => {
     const data = JSON.parse(json);
-    twitchAuth(data);
+    TwitchConnection.authenticate(data);
 });
 
 /**

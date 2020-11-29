@@ -1,0 +1,60 @@
+.CollectionContainer {
+  @extend .z-depth-1;
+  background-color: $card-bg-color;
+
+  ul {
+    margin: 0;
+  }
+
+  .collection-item {
+    border: none;
+  }
+
+  .collection-header {
+    background-color: $primary-color-dark;
+    padding: 0 1rem;
+    line-height: 2.5rem;
+    border-top-left-radius: $button-radius;
+    border-top-right-radius: $button-radius;
+  }
+
+  .collection-footer {
+    background-color: $card-bg-color;
+    padding: 0 1rem;
+    line-height: 2.5rem;
+    border-top: 1px solid $border-color;
+    position: relative;
+
+    button {
+      @extend .z-depth-0;
+      border-radius: 0;
+      position: absolute;
+      top: 0;
+      background-color: transparent;
+
+      &.left {
+        left: 0;
+        border-bottom-left-radius: $button-radius;
+      }
+
+      &.right {
+        right: 0;
+        border-bottom-right-radius: $button-radius;
+      }
+    }
+  }
+}
+
+.ScrollbarsCustom {
+  .ScrollbarsCustom-Thumb {
+    background: $primary-color-dark !important;
+    width: 6px !important;
+    border-radius: 3px !important;
+    margin-left: 2px;
+    opacity: 0.4 !important;
+
+    &:hover {
+      opacity: 1.0 !important;
+    }
+  }
+}

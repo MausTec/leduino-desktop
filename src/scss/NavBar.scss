@@ -1,0 +1,57 @@
+nav {
+  $logo-height: 24px;
+  $avatar-height: 45px;
+
+  position: fixed;
+  top: 0;
+  z-index: $sidenav-z + 1;
+  background-color: $primary-color-dark;
+
+  .status {
+    height: $navbar-height;
+    margin-left: $sidenav-width;
+    padding-left: 1.5rem;
+    font-size: 1.2rem;
+    float: left;
+  }
+
+  ul > li > a {
+    height: $navbar-height;
+    line-height: $avatar-height;
+    vertical-align: middle;
+
+    & > img, & > span {
+      display: inline-block;
+      height: $avatar-height;
+      margin: ($navbar-height - $avatar-height) / 2 0;
+      vertical-align: middle;
+    }
+
+    & > img {
+      border-radius: 50%;
+      margin-left: 15px;
+    }
+  }
+
+  .brand-logo {
+    width: $sidenav-width;
+    background-color: $primary-color;
+    height: $navbar-height;
+    padding: 0 1.5rem;
+    font-size: 1.6rem;
+    font-weight: 300;
+    line-height: $logo-height;
+    vertical-align: middle;
+
+    img, img + span {
+      display: inline-block;
+      height: $logo-height;
+      margin: ($navbar-height - $logo-height) / 2 0;
+      vertical-align: middle;
+    }
+
+    img + span {
+      padding-left: 1rem;
+    }
+  }
+}

@@ -1,0 +1,41 @@
+.SearchBar {
+  $search-bar-height: 3.5rem;
+
+  @extend .z-depth-1;
+
+  position: relative;
+  height: $search-bar-height;
+
+  input[type="search"] {
+    font-weight: 300;
+    font-size: 1.8rem;
+    box-sizing: border-box;
+    padding: 0 $search-bar-height 0 1rem;
+    line-height: $search-bar-height;
+    height: $search-bar-height;
+    background-color: $card-bg-color;
+    border-bottom-color: transparent;
+    margin: 0;
+  }
+
+  button {
+    @extend .z-depth-0;
+    line-height: $search-bar-height;
+    height: $search-bar-height;
+    border-bottom-left-radius: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color: transparent;
+
+    &:disabled {
+      background-color: transparent !important;
+    }
+  }
+
+  & + .search-results {
+    margin-top: 5px;
+    height: 1rem;
+    line-height: 1rem;
+  }
+}
