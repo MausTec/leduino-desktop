@@ -16,6 +16,28 @@ if (handleSquirrelEvent()) {
 // Menu.setApplicationMenu(null);
 
 let mainWindow;
+let port;
+
+
+const onRedeem = (message) => {
+    console.log(port);
+
+    if (port) {
+        switch (message.rewardName) {
+            case "Lights go Red":
+                port.write("set all #FF0000\n");
+                break;
+            case "Lights go Blu":
+                port.write("set all #0000FF\n");
+                break;
+            case "Lights custom hex":
+                port.write(`set all ${message.message}\n`)
+                break;
+        }
+    } else {
+        console.warn("Write to empty port!");
+    }
+}
 
 function createWindow () {
     mainWindow = new BrowserWindow({
@@ -34,7 +56,7 @@ function createWindow () {
     mainWindow.loadURL(startURL);
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
-        TwitchConnection.authenticate();
+        TwitchConnection.authenticate({}, onRedeem);
     });
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -60,8 +82,6 @@ ipcMain.on('SERIAL', (event, data) => {
         event.reply('SERIAL', JSON.stringify(ports));
     });
 })
-
-let port;
 
 ipcMain.on('SERIAL_CONNECT', (event, data) => {
     const { path, baudRate = 115200 } = JSON.parse(data);
@@ -100,7 +120,7 @@ ipcMain.on('SERIAL_WRITE', (event, line) => {
 
 ipcMain.on('TWITCH_AUTH', (event, json) => {
     const data = JSON.parse(json);
-    TwitchConnection.authenticate(data);
+    TwitchConnection.authenticate(data, onRedeem);
 });
 
 /**
