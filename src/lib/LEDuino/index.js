@@ -8,14 +8,20 @@ class LEDuino {
     initialize(connection) {
         this.onConnect = null;
         this.onDisconnect = null;
+        this.onColorChange = null;
+
         this.connect(connection);
     }
 
     connect(connection) {
         this.connection = connection;
-        connection.onReceive = this.recv.bind(this);
-        connection.onConnect = this.onConnect;
-        connection.onDisconnect = this.onDisconnect;
+        this.connection.onReceive = this.recv.bind(this);
+        this.connection.onConnect = this.onConnect;
+        this.connection.onDisconnect = this.onDisconnect;
+    }
+
+    isConnected() {
+        return this.connection && this.connection.isConnected();
     }
 
     disconnect() {
@@ -52,7 +58,12 @@ class LEDuino {
     }
 
     recv(msg) {
-        console.log(msg);
+        let m = msg.match(/^(#[a-f0-9]{6})/i)
+        if (m) {
+            this.onColorChange && this.onColorChange(1, Color(m[0]));
+        } else {
+            console.log("RECV unknown " + msg)
+        }
     }
 }
 

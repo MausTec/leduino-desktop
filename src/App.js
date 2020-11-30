@@ -1,37 +1,41 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Icon, Col, Row, Button, Select, TextInput} from "react-materialize";
 import LEDuino from "./lib/LEDuino";
 import LEDuinoSerialConnection from "./lib/LEDuino/LEDuinoSerialConnection";
 import ConnectionForm from "./components/ConnectionForm";
 import e from "./utils/e";
-
-let device = new LEDuino();
+import {LEDuinoContext} from "./components/LEDuinoProvider";
 
 const App = () => {
+    const { device } = useContext(LEDuinoContext);
+    const connected = device && device.isConnected();
+
     const [path, setPath] = useState(null);
-    const [connected, setConnected] = useState(false);
     const [color, setColor] = useState("#000000");
     const [live, setLive] = useState(true);
 
     useEffect(() => {
-        device.onConnect = () => setConnected(true);
-        device.onDisconnect =() => setConnected(false);
-    }, [])
+        if (!device) {
+            return;
+        }
 
-    useEffect(() => {
         if (!path) {
             device.disconnect();
         }
 
         const connection = new LEDuinoSerialConnection(path);
         device.connect(connection);
-    }, [path])
+    }, [path, device])
 
     useEffect(() => {
+        if (!device) {
+            return;
+        }
+
         if (live) {
             device.setAll(color);
         }
-    }, [color, live])
+    }, [color, live, device])
 
     return (
         <div className={'App'}>
