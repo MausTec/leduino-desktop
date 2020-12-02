@@ -6,7 +6,7 @@ const { ipcMain } = require('electron');
 const CLIENT_ID = 'uc6rmnts2td4z4ch98jwqlue2zcysr';
 
 class TwitchConnection {
-    static authenticate(data, onRedeem) {
+    static authenticate(data, onRedeem, window) {
         const redirectUri = 'http://localhost/login';
 
         const authProvider = new ElectronAuthProvider({
@@ -21,7 +21,7 @@ class TwitchConnection {
 
             pubSubClient.onRedemption(userId, (message) => {
                 console.log(`${message.userDisplayName} redeemed: ${JSON.stringify(message, undefined, 2)}`);
-                ipcMain.emit('TWITCH_REDEEM', JSON.stringify(message));
+                window && window.webContents.send('TWITCH_REDEEM', JSON.stringify(message));
                 onRedeem(message);
             })
         });

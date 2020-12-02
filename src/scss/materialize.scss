@@ -35,6 +35,10 @@ $sidenav-z: 999;
 
 @import '~materialize-css/sass/materialize.scss';
 
+.no-transition {
+  transition: none !important;
+}
+
 .select-wrapper .caret {
   fill: $input-border-color;
 }

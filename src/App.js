@@ -5,6 +5,7 @@ import LEDuinoSerialConnection from "./lib/LEDuino/LEDuinoSerialConnection";
 import ConnectionForm from "./components/ConnectionForm";
 import e from "./utils/e";
 import {LEDuinoContext} from "./components/LEDuinoProvider";
+import VUMeter from "./components/VUMeter";
 
 const App = () => {
     const { device } = useContext(LEDuinoContext);
@@ -50,6 +51,9 @@ const App = () => {
                         <TextInput s={12} name={'cmd'} type={'color'} value={color} label={"Channel 1"} onChange={e => setColor(e.target.value)}/>
                         <Button type={'submit'} className={'block'}>Send</Button>
                         <a onClick={e(setPath)}>Disconnect</a>
+                        <br/>
+                        <br/>
+                        <VUMeter />
                     </Row>
                 </form> }
             </div>

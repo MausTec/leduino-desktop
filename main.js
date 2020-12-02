@@ -19,6 +19,44 @@ let mainWindow;
 let port;
 
 
+const AudioConnection = require('./src/server/AudioConnection');
+let ac;
+
+const mapv = (ampl, max) => {
+    return Math.max(0, Math.min(max, (ampl/AudioConnection.SAMPLE_MAX) * max))
+}
+
+const gain = 0.2;
+const hueStart = 0;
+const hueEnd = 30;
+const rotate = false;
+
+let dotL, dotR, hue, lhue, value;
+
+const onAmplSample = (ampl) => {
+    dotL = mapv(ampl, AudioConnection.SCALE_MAX);
+    hue  = Math.floor(mapv(ampl, 255));
+    value = Math.floor(mapv(ampl, 100));
+
+    console.log(
+        `${ampl}\t` +
+        "=".repeat(dotL) + "#"
+    )
+
+    const Color = require('color')
+
+    if (port && hue !== lhue) {
+        hue *= gain;
+        if (rotate) {
+            hue += lhue;
+        }
+        let str = `set all ` + Color.hsv(hueStart + (hue % hueEnd),100,value).hex() + "\n";
+        port.write(str);
+        lhue = hue;
+    }
+}
+
+
 const onRedeem = (message) => {
     console.log(port);
 
@@ -57,6 +95,8 @@ function createWindow () {
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
         TwitchConnection.authenticate({}, onRedeem);
+        ac = new AudioConnection(mainWindow);
+        ac.onAmplitudeSample = onAmplSample;
     });
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -120,7 +160,7 @@ ipcMain.on('SERIAL_WRITE', (event, line) => {
 
 ipcMain.on('TWITCH_AUTH', (event, json) => {
     const data = JSON.parse(json);
-    TwitchConnection.authenticate(data, onRedeem);
+    TwitchConnection.authenticate(data, onRedeem, mainWindow);
 });
 
 /**
