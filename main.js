@@ -26,20 +26,21 @@ const mapv = (ampl, max) => {
     return Math.max(0, Math.min(max, (ampl/AudioConnection.SAMPLE_MAX) * max))
 }
 
-const gain = 0.2;
-const hueStart = 0;
-const hueEnd = 30;
-const rotate = false;
+const gain = 1.0;
+let hueStart = 0;
+const hueEnd = 360 ;// 30;
+const rotate = true;
 
 let dotL, dotR, hue, lhue, value;
 
-const onAmplSample = (ampl) => {
-    dotL = mapv(ampl, AudioConnection.SCALE_MAX);
-    hue  = Math.floor(mapv(ampl, 255));
-    value = Math.floor(mapv(ampl, 100));
+
+const onAmplSample = (ampl, raAvg) => {
+    dotL = mapv(raAvg, AudioConnection.SCALE_MAX);
+    hue  = Math.floor(mapv(raAvg, 360));
+    value = Math.floor(mapv(raAvg, 100));
 
     console.log(
-        `${ampl}\t` +
+        `${raAvg}\t` +
         "=".repeat(dotL) + "#"
     )
 
@@ -48,9 +49,9 @@ const onAmplSample = (ampl) => {
     if (port && hue !== lhue) {
         hue *= gain;
         if (rotate) {
-            hue += lhue;
+            hueStart += 1;
         }
-        let str = `set all ` + Color.hsv(hueStart + (hue % hueEnd),100,value).hex() + "\n";
+        let str = `set all ` + Color.hsv((hueStart + hue) % hueEnd,100,value).hex() + "\n";
         port.write(str);
         lhue = hue;
     }

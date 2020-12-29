@@ -18,6 +18,13 @@ class AudioConnection {
             // inputDevice
         })
 
+
+        this.raWindow = 256;
+        this.raVal = [];
+        this.raSum = 0;
+        this.raAvg = 0;
+        this.raLast = 0;
+
         this.onAmplitudeSample = (a) => {};
         this.lastAmplitude = 0;
 
@@ -55,6 +62,15 @@ class AudioConnection {
     processAudio(inputBuffer) {
         let valL = inputBuffer[0] || [0];
         let valR = inputBuffer[1] || [0];
+        let valF = valL.map(i => {
+            this.raVal.push(i);
+            if (this.raVal.length > this.raWindow) {
+                this.raLast = this.raVal.shift();
+                this.raSum -= this.raLast;
+            }
+            this.raSum += i;
+            return this.raSum / Math.max(this.raVal.length, 1);
+        })
 
         // valL = valL.map((v, x) => {
         //     for (i = 0; i < 32; i++)
@@ -64,10 +80,11 @@ class AudioConnection {
 
         const ampl = Math.max(...valL.map(i => Math.abs(i)));
         const ampl8 = Math.floor(this.mapv(ampl, 255));
+        const amplF = Math.max(...valF.map(i => Math.abs(i)));
 
         if (ampl8 !== this.lastAmplitude) {
-            this.onAmplitudeSample && this.onAmplitudeSample(ampl);
-            this.window && this.window.webContents.send("AUDIO_SAMPLE", JSON.stringify({ampl}));
+            this.onAmplitudeSample && this.onAmplitudeSample(ampl, amplF);
+            this.window && this.window.webContents.send("AUDIO_SAMPLE", JSON.stringify({ampl, amplF}));
             this.lastAmplitude = ampl8;
         }
 

@@ -3,7 +3,7 @@ import {ProgressBar} from "react-materialize";
 const { ipcRenderer } = window.require('electron');
 
 const VUMeter = () => {
-    const [ampl, setAmpl] = useState(0);
+    const [ampl, setAmpl] = useState({ampl:0, amplF:0});
     const SAMPLE_MAX = Math.pow(2, 31);
 
     useEffect(() => {
@@ -11,12 +11,15 @@ const VUMeter = () => {
         ipcRenderer.on("AUDIO_SAMPLE", (event, json) => {
             console.log({ json });
             const data = JSON.parse(json);
-            setAmpl(data.ampl);
+            setAmpl(data);
         });
     }, []);
 
     return (
-        <ProgressBar progress={ampl/SAMPLE_MAX*100} className={'no-transition'} />
+        <React.Fragment>
+            <ProgressBar progress={ampl.ampl/SAMPLE_MAX*100} className={'no-transition'} />
+            <ProgressBar progress={ampl.amplF/SAMPLE_MAX*100} className={'no-transition'} />
+        </React.Fragment>
     )
 }
 
